@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Database } from "./database.js";
 import { buildRoutePath } from "./utils/build-route-path.js";
+import { title } from "node:process";
 
 const database = new Database();
 
@@ -41,7 +42,11 @@ export const routes = [
     method: "GET",
     path: buildRoutePath("/tasks"),
     handler: (req, res) => {
-      const tasks = database.select("tasks");
+      const { search } = req.query;
+      const tasks = database.select("tasks", {
+        title: search,
+        description: search,
+      });
 
       return res.end(JSON.stringify(tasks));
     },
@@ -52,6 +57,18 @@ export const routes = [
     handler: (req, res) => {
       const { id } = req.params;
       const { title, description } = req.body;
+
+      if (!title) {
+        return res
+          .writeHead(400)
+          .end(JSON.stringify({ message: "title is required" }));
+      }
+
+      if (!description) {
+        return res
+          .writeHead(400)
+          .end(JSON.stringify({ message: "description is required" }));
+      }
 
       database.update("tasks", id, {
         title,
