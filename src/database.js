@@ -43,6 +43,7 @@ export class Database {
         });
       });
     }
+
     return data;
   }
 
